@@ -363,32 +363,26 @@ class FocusApp {
     }
 
     updateScore(faceDetected) {
-        if (faceDetected) {
-            let penalty = 0;
+        const raw = calculateFocusScore({
+            headOffset: this.currentHeadOffset || 0,
+            eyeCloseDur: this.eyeCloseDuration,
+            headTurnDur: this.headTurnDuration,
+            faceDetected: faceDetected,
+            stableFrames: this.stableFrames,
+            gazeDir: this.gazeDirection,
+            headStatus: this.headStatus,
+            mouthOpen: this.mouthOpen,
+            mouthDur: this.mouthOpenDuration
+        });
 
-            if (this.eyeCloseDuration > CONFIG.normalBlinkMaxFrames) penalty += 0.3;
-            if (this.headTurnDuration > CONFIG.headTurnNoPenaltyFrames) penalty += 0.2;
-            if (this.headStatus === '低头' || this.headStatus === '抬头') penalty += 0.15;
-            if (this.mouthOpen && this.mouthOpenDuration > CONFIG.mouthDurationThreshold) penalty += 0.15;
-            if (this.abnormalGaze) penalty += CONFIG.gazeChangePenalty;
+        this.focusScore = Math.round(CONFIG.smoothAlpha * raw + (1 - CONFIG.smoothAlpha) * this.focusScore);
 
-            if (penalty > 0) {
-                this.focusScore = Math.max(0, this.focusScore - penalty);
-            } else {
-                this.focusScore = Math.min(100, this.focusScore + 0.1);
-            }
-        } else {
-            this.focusScore = Math.max(0, this.focusScore - 0.5);
-        }
-
-        this.focusScore = Math.round(this.focusScore * 10) / 10;
-
-        this.focusHistory.push(Math.round(this.focusScore));
+        this.focusHistory.push(this.focusScore);
         if (this.focusHistory.length > 100) this.focusHistory.shift();
 
         const dt = (performance.now() - this.lastUpdate) / 1000;
         this.lastUpdate = performance.now();
-        if (Math.round(this.focusScore) >= 60) this.focusDuration += dt;
+        if (this.focusScore >= 60) this.focusDuration += dt;
         else this.distractCount++;
 
         this.updateUI();
@@ -424,7 +418,7 @@ class FocusApp {
     }
 
     updateUI() {
-        const s = Math.round(this.focusScore);
+        const s = this.focusScore;
         const arc = document.getElementById('scoreArc');
         const circumference = 2 * Math.PI * 30;
         const offset = circumference * (1 - s / 100);
