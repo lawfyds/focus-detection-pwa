@@ -6,37 +6,37 @@ const CONFIG = {
     headLookDownThreshold: 0.65,
     headTurnLeftThreshold: 0.4,
     headTurnRightThreshold: 0.6,
-    headOffsetHigh: 0.5,
-    headOffsetMedium: 0.4,
-    headOffsetLow: 0.3,
-    headOffsetPenaltyHigh: 20,
-    headOffsetPenaltyMedium: 12,
-    headOffsetPenaltyLow: 5,
-    headTiltPenalty: 8,
-    headTurnNoPenaltyFrames: 10,
-    headTurnPenaltyPerFrame: 0.3,
-    headTurnMaxPenalty: 15,
-    gazeLeft: 0.25,
-    gazeRight: 0.75,
-    gazeUp: 0.35,
-    gazeDown: 0.65,
-    gazePenalty: 10,
-    mouthDurationThreshold: 3,
-    mouthPenaltyPerFrame: 1.5,
-    mouthMaxPenalty: 15,
-    mildEyeClosePerFrame: 2,
-    severeEyeClosePerFrame: 3,
-    eyeCloseMildThreshold: 10,
+    headOffsetHigh: 0.6,
+    headOffsetMedium: 0.5,
+    headOffsetLow: 0.4,
+    headOffsetPenaltyHigh: 15,
+    headOffsetPenaltyMedium: 8,
+    headOffsetPenaltyLow: 3,
+    headTiltPenalty: 5,
+    headTurnNoPenaltyFrames: 15,
+    headTurnPenaltyPerFrame: 0.2,
+    headTurnMaxPenalty: 10,
+    gazeLeft: 0.2,
+    gazeRight: 0.8,
+    gazeUp: 0.3,
+    gazeDown: 0.7,
+    gazePenalty: 5,
+    mouthDurationThreshold: 5,
+    mouthPenaltyPerFrame: 1,
+    mouthMaxPenalty: 10,
+    mildEyeClosePerFrame: 1.5,
+    severeEyeClosePerFrame: 2.5,
+    eyeCloseMildThreshold: 12,
     faceNotDetectedPenalty: 50,
-    stabilityHigh: 150,
-    stabilityMedium: 100,
-    stabilityLow: 50,
-    stabilityBonusHigh: 8,
-    stabilityBonusMed: 5,
-    stabilityBonusLow: 2,
+    stabilityHigh: 100,
+    stabilityMedium: 60,
+    stabilityLow: 30,
+    stabilityBonusHigh: 10,
+    stabilityBonusMed: 6,
+    stabilityBonusLow: 3,
     compoundThreshold: 2,
-    compoundModerate: 8,
-    compoundStrong: 15,
+    compoundModerate: 5,
+    compoundStrong: 10,
     focusHigh: 80,
     focusMedium: 60,
     focusLow: 40,
@@ -354,7 +354,7 @@ class FocusApp {
 
     updateScore(faceDetected) {
         if (faceDetected) {
-            this.focusScore = calculateFocusScore({
+            const newScore = calculateFocusScore({
                 headOffset: this.currentHeadOffset || 0,
                 eyeCloseDur: this.eyeCloseDuration,
                 headTurnDur: this.headTurnDuration,
@@ -365,6 +365,11 @@ class FocusApp {
                 mouthOpen: this.mouthOpen,
                 mouthDur: this.mouthOpenDuration
             });
+            if (newScore > this.focusScore) {
+                this.focusScore = Math.min(newScore, this.focusScore + 1.5);
+            } else {
+                this.focusScore = Math.max(newScore, this.focusScore - 0.8);
+            }
         } else {
             this.focusScore = Math.max(0, this.focusScore - 0.8);
         }
