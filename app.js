@@ -353,17 +353,21 @@ class FocusApp {
     }
 
     updateScore(faceDetected) {
-        this.focusScore = calculateFocusScore({
-            headOffset: this.currentHeadOffset || 0,
-            eyeCloseDur: this.eyeCloseDuration,
-            headTurnDur: this.headTurnDuration,
-            faceDetected,
-            stableFrames: this.stableFrames,
-            gazeDir: this.gazeDirection,
-            headStatus: this.headStatus,
-            mouthOpen: this.mouthOpen,
-            mouthDur: this.mouthOpenDuration
-        });
+        if (faceDetected) {
+            this.focusScore = calculateFocusScore({
+                headOffset: this.currentHeadOffset || 0,
+                eyeCloseDur: this.eyeCloseDuration,
+                headTurnDur: this.headTurnDuration,
+                faceDetected: true,
+                stableFrames: this.stableFrames,
+                gazeDir: this.gazeDirection,
+                headStatus: this.headStatus,
+                mouthOpen: this.mouthOpen,
+                mouthDur: this.mouthOpenDuration
+            });
+        } else {
+            this.focusScore = Math.max(0, this.focusScore - 0.8);
+        }
 
         this.focusHistory.push(this.focusScore);
         if (this.focusHistory.length > 100) this.focusHistory.shift();
