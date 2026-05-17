@@ -40,7 +40,9 @@ const CONFIG = {
     focusHigh: 80,
     focusMedium: 60,
     focusLow: 40,
-    smoothAlpha: 0.5
+    smoothAlpha: 0.5,
+    gazeChangeThreshold: 0.15,
+    gazeChangePenalty: 0.2
 };
 
 const LEFT_EYE = [33, 160, 158, 133, 153, 144];
@@ -213,7 +215,7 @@ class FocusApp {
         this.smoother = new LandmarkSmoother(CONFIG.smoothAlpha);
         this.blinkDetector = new BlinkDetector();
 
-        this.focusScore = 85;
+        this.focusScore = 70;
         this.stableFrames = 0;
         this.eyeCloseDuration = 0;
         this.headTurnDuration = 0;
@@ -222,6 +224,8 @@ class FocusApp {
         this.headStatus = '居中';
         this.eyeStatus = '睁开';
         this.mouthOpen = false;
+        this.prevGaze = null;
+        this.abnormalGaze = false;
 
         this.focusHistory = [];
         this.sessionStart = performance.now();
@@ -342,6 +346,13 @@ class FocusApp {
         const gz = calculateGaze(lm, w, h);
         this.gazeDirection = gz.direction;
 
+        if (this.prevGaze) {
+            const dx = Math.abs(gz.gx - this.prevGaze.gx);
+            const dy = Math.abs(gz.gy - this.prevGaze.gy);
+            this.abnormalGaze = dx > CONFIG.gazeChangeThreshold || dy > CONFIG.gazeChangeThreshold;
+        }
+        this.prevGaze = { gx: gz.gx, gy: gz.gy };
+
         const md = detectMouth(lm, w, h);
         this.mouthOpen = md.open;
         if (md.open) this.mouthOpenDuration++;
@@ -353,32 +364,29 @@ class FocusApp {
 
     updateScore(faceDetected) {
         if (faceDetected) {
-            const newScore = calculateFocusScore({
-                headOffset: this.currentHeadOffset || 0,
-                eyeCloseDur: this.eyeCloseDuration,
-                headTurnDur: this.headTurnDuration,
-                faceDetected: true,
-                stableFrames: this.stableFrames,
-                gazeDir: this.gazeDirection,
-                headStatus: this.headStatus,
-                mouthOpen: this.mouthOpen,
-                mouthDur: this.mouthOpenDuration
-            });
-            if (newScore > this.focusScore) {
-                this.focusScore = Math.min(newScore, this.focusScore + 1.5);
+            let penalty = 0;
+
+            if (this.eyeCloseDuration > CONFIG.normalBlinkMaxFrames) penalty += 0.3;
+            if (this.headTurnDuration > CONFIG.headTurnNoPenaltyFrames) penalty += 0.2;
+            if (this.headStatus === '低头' || this.headStatus === '抬头') penalty += 0.15;
+            if (this.mouthOpen && this.mouthOpenDuration > CONFIG.mouthDurationThreshold) penalty += 0.15;
+            if (this.abnormalGaze) penalty += CONFIG.gazeChangePenalty;
+
+            if (penalty > 0) {
+                this.focusScore = Math.max(0, this.focusScore - penalty);
             } else {
-                this.focusScore = Math.max(newScore, this.focusScore - 0.8);
+                this.focusScore = Math.min(100, this.focusScore + 0.1);
             }
         } else {
-            this.focusScore = Math.max(0, this.focusScore - 0.8);
+            this.focusScore = Math.max(0, this.focusScore - 0.5);
         }
 
-        this.focusHistory.push(this.focusScore);
+        this.focusHistory.push(Math.round(this.focusScore));
         if (this.focusHistory.length > 100) this.focusHistory.shift();
 
         const dt = (performance.now() - this.lastUpdate) / 1000;
         this.lastUpdate = performance.now();
-        if (this.focusScore >= 60) this.focusDuration += dt;
+        if (Math.round(this.focusScore) >= 60) this.focusDuration += dt;
         else this.distractCount++;
 
         this.updateUI();
@@ -414,7 +422,7 @@ class FocusApp {
     }
 
     updateUI() {
-        const s = this.focusScore;
+        const s = Math.round(this.focusScore);
         const arc = document.getElementById('scoreArc');
         const circumference = 2 * Math.PI * 30;
         const offset = circumference * (1 - s / 100);
