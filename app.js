@@ -381,6 +381,8 @@ class FocusApp {
             this.focusScore = Math.max(0, this.focusScore - 0.5);
         }
 
+        this.focusScore = Math.round(this.focusScore * 10) / 10;
+
         this.focusHistory.push(Math.round(this.focusScore));
         if (this.focusHistory.length > 100) this.focusHistory.shift();
 
