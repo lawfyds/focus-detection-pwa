@@ -2,8 +2,8 @@ const CONFIG = {
     earThreshold: 0.18,
     earConsecutiveFrames: 2,
     normalBlinkMaxFrames: 3,
-    headLookUpThreshold: 0.35,
-    headLookDownThreshold: 0.65,
+    headLookUpThreshold: 0.3,
+    headLookDownThreshold: 0.7,
     headTurnLeftThreshold: 0.4,
     headTurnRightThreshold: 0.6,
     headOffsetHigh: 0.6,
@@ -20,7 +20,7 @@ const CONFIG = {
     gazeRight: 0.8,
     gazeUp: 0.3,
     gazeDown: 0.7,
-    gazePenalty: 5,
+    gazePenalty: 0,
     mouthDurationThreshold: 5,
     mouthPenaltyPerFrame: 1,
     mouthMaxPenalty: 10,
@@ -149,7 +149,6 @@ function calculateFocusScore(opts) {
     if (eyeCloseDur > CONFIG.normalBlinkMaxFrames) abnormal++;
     if (headTurnDur > CONFIG.headTurnNoPenaltyFrames) abnormal++;
     if (mouthOpen && mouthDur > CONFIG.mouthDurationThreshold) abnormal++;
-    if (gazeDir && gazeDir !== '向前看') abnormal++;
 
     if (abnormal >= 3) s -= CONFIG.compoundStrong;
     else if (abnormal >= CONFIG.compoundThreshold) s -= CONFIG.compoundModerate;
