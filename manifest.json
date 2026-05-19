@@ -1,0 +1,22 @@
+{
+    "name": "学生心理专注度识别系统",
+    "short_name": "专注度检测",
+    "description": "基于人脸关键点的实时专注度评估系统",
+    "start_url": "./index.html",
+    "display": "standalone",
+    "orientation": "portrait",
+    "background_color": "#1a1a2e",
+    "theme_color": "#4a90d9",
+    "icons": [
+        {
+            "src": "icons/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

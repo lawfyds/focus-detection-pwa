@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#1a1a2e">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <title>专注度识别</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <div class="loading-text" id="loadingText">正在加载模型...</div>
+    </div>
+
+    <div class="header">
+        <h1>学生心理专注度识别系统</h1>
+    </div>
+
+    <div class="camera-area">
+        <video id="videoElement" autoplay playsinline muted></video>
+        <canvas id="overlayCanvas"></canvas>
+        <div class="score-panel">
+            <div class="score-ring" style="position:relative;">
+                <svg viewBox="0 0 72 72">
+                    <circle class="bg" cx="36" cy="36" r="30"></circle>
+                    <circle class="fg" id="scoreArc" cx="36" cy="36" r="30"
+                            stroke-dasharray="188.5" stroke-dashoffset="188.5"></circle>
+                </svg>
+                <div class="value" id="scoreValue">--</div>
+            </div>
+            <div class="score-info">
+                <div class="evaluation" id="evaluationText">等待检测...</div>
+                <div class="status-row">
+                    <span class="status-tag" id="tagEye">眼睛: --</span>
+                    <span class="status-tag" id="tagHead">头部: --</span>
+                    <span class="status-tag" id="tagMouth">嘴部: --</span>
+                    <span class="status-tag" id="tagGaze">视线: --</span>
+                </div>
+            </div>
+        </div>
+        <div class="fps-badge" id="fpsBadge">-- FPS</div>
+    </div>
+
+    <div class="bottom-panel">
+        <div class="stats-row">
+            <div class="stat-item">
+                <div class="label">眨眼次数</div>
+                <div class="val" id="blinkCount">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="label">专注占比</div>
+                <div class="val" id="focusRatio">--%</div>
+            </div>
+            <div class="stat-item">
+                <div class="label">检测时长</div>
+                <div class="val" id="elapsed">0s</div>
+            </div>
+        </div>
+        <canvas class="trend-chart" id="trendCanvas"></canvas>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="app.js"></script>
+</body>
+</html>
