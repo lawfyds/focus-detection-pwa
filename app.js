@@ -43,7 +43,7 @@ const CONFIG = {
     smoothAlpha: 0.5,
     gazeChangeThreshold: 0.15,
     gazeChangePenalty: 0.2,
-    noFaceDropPerFrame: 5,
+    noFaceDropPerFrame: 1,
     lowScoreAlertThreshold: 30,
     lowScoreAlertFrames: 60,
     alertFlashDuration: 300
